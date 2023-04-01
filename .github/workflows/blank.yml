@@ -1,36 +1,47 @@
-# This is a basic workflow to help you get started with Actions
+# This isproject.
 
-name: CI
-
-# Controls when the workflow will run
+name: Timer
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+   runs-on: windows-latest
+   timeout-minutes: 9999999
+   steps:
+      - name: Setup User Account
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+            REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /V EnableAutoTray /T REG_DWORD /D 0 /F
+            cmd /c "net user Administrator @Alamid /add"
+            cmd /c "net localgroup administrators Administrator /add"
+            cmd /c "net user Administrator /active:yes"
+            cmd /c "net user installer /delete"
+            cmd /c "ICACLS C:\Windows\Temp /grant Administrator:F"
+            cmd /c "ICACLS C:\Windows\Installer /grant Administrator:F"
+            cmd /c "diskperf -y"
+            cmd /c "sc config Audiosrv start= auto"
+            cmd /c "sc start audiosrv"
+
+      - name: Turn on Access Remote
+        run: |
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+            Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+            Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+
+      - name: Setup ZeroTier
+        run: |
+            Invoke-WebRequest -uri https://download.zerotier.com/dist/ZeroTier%20One.msi -outfile D:\a\zerotier.msi
+            cmd /c msiexec /i D:\a\zerotier.msi /qn /norestart 'ZTHEADLESS=Yes'
+            cmd /c C:\ProgramData\ZeroTier\One\zerotier-one_x64.exe -q join $Env:ZEROTIER
+        env:
+            ZEROTIER: ${{ secrets.ZEROTIER }}
+            
+      - name: Setup QBitTorrent
+        run: |
+            cmd /c "start chrome.exe https://www.fosshub.com/qBittorrent.html?dwl=qbittorrent_4.5.2_x64_setup.exe"
+            start-sleep -Seconds 35
+            cmd /c "C:\Users\runneradmin\Downloads\qbittorrent_4.5.2_x64_setup.exe /S"
+            
+      - name: Ready
+        run: |
+            echo Ready
+            start-sleep -Seconds 21300
