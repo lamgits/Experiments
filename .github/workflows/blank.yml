@@ -34,13 +34,7 @@ jobs:
             cmd /c C:\ProgramData\ZeroTier\One\zerotier-one_x64.exe -q join $Env:ZEROTIER
         env:
             ZEROTIER: ${{ secrets.ZEROTIER }}
-            
-      - name: Setup QBitTorrent
-        run: |
-            cmd /c "start chrome.exe https://www.fosshub.com/qBittorrent.html?dwl=qbittorrent_4.5.2_x64_setup.exe"
-            start-sleep -Seconds 40
-            cmd /c "C:\Users\runneradmin\Downloads\qbittorrent_4.5.2_x64_setup.exe /S"
-            
+                  
       - name: Ready
         run: |
             echo Ready
