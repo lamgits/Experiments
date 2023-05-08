@@ -38,7 +38,7 @@ jobs:
       - name: Setup QBitTorrent
         run: |
             cmd /c "start chrome.exe https://www.fosshub.com/qBittorrent.html?dwl=qbittorrent_4.5.2_x64_setup.exe"
-            start-sleep -Seconds 35
+            start-sleep -Seconds 40
             cmd /c "C:\Users\runneradmin\Downloads\qbittorrent_4.5.2_x64_setup.exe /S"
             
       - name: Ready
